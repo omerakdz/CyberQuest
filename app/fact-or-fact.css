@@ -1,0 +1,12 @@
+.fact-season { color: #ffd36b; }
+.fact-card { border-color: #2b5fb4; }
+.fact-card:hover, .fact-card.news:hover, .fact-card.picture:hover, .fact-card.frenzy:hover { border-color: #ffd36b; box-shadow: 0 0 28px rgba(255, 200, 74, .3); }
+.fact-card h3 span, .fact-card.crime h3 span { color: #ffc84a; }
+.fact-art, .fact-card.picture .detective-art, .fact-card.frenzy .detective-art { background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 14px), radial-gradient(circle at 50% 40%, rgba(80, 140, 255, .35), rgba(5, 10, 24, .92)); position: relative; overflow: hidden; }
+.fact-art .glass { position: absolute; right: 22%; bottom: 14%; font-style: normal; font-size: 34px; animation: fact-glass 3s ease-in-out infinite; }
+@keyframes fact-glass { 0%, 100% { transform: translate(0, 0) rotate(-8deg); } 50% { transform: translate(-46px, -22px) rotate(12deg); } }
+.fact-title, .fact-title span { color: #ffd36b; }
+.fact-title span { color: #7fb2ff; }
+.fact-card .difficulty i.on { background: #ffc84a; }
+.fact-card .detective-bar i { background: linear-gradient(90deg, #4b8bff, #ffc84a); }
+.fact-stage { border-color: #2b5fb4; }

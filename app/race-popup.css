@@ -1,0 +1,9 @@
+.race-popup-slot{min-height:54px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.race-popup{display:inline-flex;align-items:center;gap:10px;padding:11px 22px;border-radius:999px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;letter-spacing:2px;color:#fff;border:1px solid rgba(48,221,255,.6);background:rgba(10,20,45,.92);box-shadow:0 0 26px rgba(48,221,255,.35);animation:race-popup-in .35s cubic-bezier(.2,1.4,.4,1)}
+.race-popup svg{width:20px;height:20px}
+.race-popup.lead{border-color:rgba(255,189,54,.8);box-shadow:0 0 28px rgba(255,189,54,.4);color:#ffd36b}
+.race-popup.streak{border-color:rgba(255,102,143,.8);box-shadow:0 0 28px rgba(255,102,143,.4);color:#ff8fae}
+.race-popup.notice{border-color:rgba(255,255,255,.25);box-shadow:none;font-size:16px}
+@keyframes race-popup-in{from{opacity:0;transform:translateY(-10px) scale(.85)}to{opacity:1;transform:none}}
+.race-popup.tip{border-color:rgba(120,255,170,.7);box-shadow:0 0 24px rgba(120,255,170,.3);color:#a8ffcb;font-size:16px;letter-spacing:1px;text-align:center;max-width:100%;border-radius:18px}
+.race-popup.fast{border-color:rgba(48,221,255,.9);box-shadow:0 0 28px rgba(48,221,255,.45);color:#8eeaff}.race-popup.broken{border-color:rgba(255,120,90,.8);box-shadow:0 0 24px rgba(255,120,90,.35);color:#ffab94}

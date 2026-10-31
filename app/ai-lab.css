@@ -1,0 +1,12 @@
+.lab-season { color: #7be7ff; }
+.lab-card { border-color: #3a3f9f; }
+.lab-card:hover, .lab-card.trainer:hover, .lab-card.human:hover, .lab-card.robot:hover { border-color: #8f6bff; box-shadow: 0 0 28px rgba(143, 107, 255, .35); }
+.lab-card h3 span { color: #8f6bff; }
+.lab-art, .lab-card.trainer .detective-art, .lab-card.human .detective-art, .lab-card.robot .detective-art { background: radial-gradient(circle at 50% 45%, rgba(88, 120, 255, .4), rgba(5, 10, 24, .94)), repeating-linear-gradient(90deg, rgba(0, 229, 255, .08) 0 2px, transparent 2px 18px); position: relative; overflow: hidden; }
+.lab-art .scan { position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #00e5ff, transparent); animation: lab-scan 2.6s linear infinite; }
+@keyframes lab-scan { 0% { top: 0; } 100% { top: 100%; } }
+.lab-title, .lab-title span { color: #7be7ff; }
+.lab-title span { color: #b69bff; }
+.lab-card .difficulty i.on { background: #8f6bff; }
+.lab-card .detective-bar i { background: linear-gradient(90deg, #00e5ff, #8f6bff); }
+.lab-stage { border-color: #3a3f9f; }

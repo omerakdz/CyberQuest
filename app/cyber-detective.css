@@ -1,0 +1,35 @@
+.detective-shell { min-height: 100vh; padding: 90px 24px 40px; display: flex; flex-direction: column; align-items: center; position: relative; }
+.detective-shell .practice-heading { text-align: center; margin-bottom: 28px; }
+.detective-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 340px)); gap: 22px; justify-content: center; width: 100%; max-width: 1100px; }
+.detective-card { background: linear-gradient(180deg, #0f1b42, #0a1130); border: 2px solid #2b4b94; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 10px; transition: transform .18s, border-color .18s, box-shadow .18s; }
+.detective-card:hover { transform: translateY(-4px); border-color: var(--cyan); box-shadow: 0 0 28px rgba(56, 221, 255, .25); }
+.detective-card.crime:hover { border-color: var(--purple); box-shadow: 0 0 28px rgba(155, 107, 255, .3); }
+.detective-card.password:hover { border-color: var(--yellow); box-shadow: 0 0 28px rgba(255, 200, 74, .25); }
+.detective-art { height: 120px; border-radius: 14px; display: grid; place-items: center; font-size: 64px; background: radial-gradient(circle at 50% 40%, rgba(56, 221, 255, .25), rgba(5, 10, 24, .9)); border: 1px solid #1f3a78; }
+.detective-card.crime .detective-art { background: radial-gradient(circle at 50% 40%, rgba(155, 107, 255, .3), rgba(5, 10, 24, .9)); }
+.detective-card.password .detective-art { background: radial-gradient(circle at 50% 40%, rgba(255, 200, 74, .25), rgba(5, 10, 24, .9)); }
+.detective-card small { color: var(--cyan); font-family: 'Space Mono', monospace; letter-spacing: .12em; text-transform: uppercase; font-size: 11px; }
+.detective-card h3 { margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 800; letter-spacing: .02em; }
+.detective-card h3 span { color: var(--cyan); }
+.detective-card.crime h3 span { color: var(--purple); }
+.detective-card.password h3 span { color: var(--yellow); }
+.detective-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; flex: 1; }
+.detective-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+.difficulty { display: flex; gap: 4px; }
+.difficulty i { width: 18px; height: 8px; border-radius: 4px; background: #1b2b57; }
+.difficulty i.on { background: var(--pink); }
+.detective-bar { height: 6px; background: #14234d; border-radius: 3px; overflow: hidden; }
+.detective-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple)); transition: width .4s; }
+.detective-card .arcade-button { margin-top: 4px; }
+.detective-frame { width: 100%; max-width: 1100px; }
+.detective-frame-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: .1em; margin-bottom: 10px; color: var(--cyan); }
+.detective-frame-title span { color: var(--purple); }
+.detective-stage { width: 100%; aspect-ratio: 16 / 10; border: 2px solid #2b4b94; border-radius: 18px; overflow: hidden; background: #050a18; box-shadow: 0 0 40px rgba(56, 221, 255, .12); }
+.detective-stage canvas { display: block; }
+@media (max-width: 1000px) { .detective-grid { grid-template-columns: minmax(0, 420px); } }
+
+/* Playing view: fit the whole game in the viewport without scrolling */
+.detective-shell:has(.detective-stage) { min-height: 0; height: calc(100dvh - 45px); padding: 12px 16px 12px; overflow: hidden; justify-content: center; }
+.detective-shell:has(.detective-stage) .detective-frame { width: min(100%, calc((100dvh - 45px - 24px - 34px) * 1.6)); max-width: 1100px; }
+.detective-shell:has(.detective-stage) .detective-frame-title { font-size: 18px; margin-bottom: 6px; }
+.detective-shell:has(.detective-stage) .detective-stage { width: 100%; }
