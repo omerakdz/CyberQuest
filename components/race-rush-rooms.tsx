@@ -268,33 +268,70 @@ function RoomSession({ roomId, userId, onExit }: { roomId: string; userId: strin
       setOnlineUsers(ids)
     }
 
-    channel = client
-      .channel(`race-room:${roomId}`, { config: { private: true, presence: { key: userId } } })
-      .on("postgres_changes", { event: "*", schema: "public", table: "race_rooms", filter: `id=eq.${roomId}` }, () => { void loadSnapshot() })
-      .on("postgres_changes", { event: "*", schema: "public", table: "race_room_players", filter: `room_id=eq.${roomId}` }, () => { void loadSnapshot() })
-      .on("presence", { event: "sync" }, syncPresence)
-      .on("presence", { event: "join" }, syncPresence)
-      .on("presence", { event: "leave" }, syncPresence)
-      .subscribe((status: string) => {
-        if (!active) return
+    let retryTimer: number | undefined
+    let attempts = 0
+    let connected = false
+
+    const connect = async () => {
+      if (!active) return
+      try {
+        // Private channels need the user's JWT on the realtime socket before joining.
+        await client.realtime.setAuth()
+      } catch {
+        // The channel join reports auth problems through its status callback.
+      }
+      if (!active) return
+
+      const next = client
+        .channel(`race-room:${roomId}`, { config: { private: true, presence: { key: userId } } })
+        .on("postgres_changes", { event: "*", schema: "public", table: "race_rooms", filter: `id=eq.${roomId}` }, () => { void loadSnapshot() })
+        .on("postgres_changes", { event: "*", schema: "public", table: "race_room_players", filter: `room_id=eq.${roomId}` }, () => { void loadSnapshot() })
+        .on("presence", { event: "sync" }, syncPresence)
+        .on("presence", { event: "join" }, syncPresence)
+        .on("presence", { event: "leave" }, syncPresence)
+      channel = next
+      next.subscribe((status: string) => {
+        if (!active || channel !== next) return
         if (status === "SUBSCRIBED") {
+          connected = true
+          attempts = 0
           setConnection("connected")
-          void channel?.track({ user_id: userId }).then((result: string) => {
+          setError("")
+          void next.track({ user_id: userId }).then((result: string) => {
             if (result !== "ok" && active) setError(`Realtime-presence kon niet worden bijgewerkt (${result}).`)
           }).catch((reason: unknown) => {
             if (active) setError(roomErrorMessage(reason))
           })
           void loadSnapshot()
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          connected = false
           setConnection("reconnecting")
-          setError(`Realtimeverbinding verbroken (${status}). Opnieuw verbinden...`)
+          window.clearTimeout(retryTimer)
+          const delay = Math.min(1500 * 2 ** attempts, 10000)
+          attempts += 1
+          retryTimer = window.setTimeout(() => {
+            if (!active) return
+            const stale = channel
+            channel = undefined
+            if (stale) void client.removeChannel(stale)
+            void connect()
+          }, delay)
         }
-      }, (reason?: Error) => {
-        if (active && reason) setError(`Realtimefout: ${reason.message}`)
       })
+    }
+
+    // The snapshot comes straight from the database, so the lobby must not depend on realtime.
+    void loadSnapshot()
+    void connect()
+    // Polling fallback keeps the lobby in sync while realtime is unavailable.
+    const poll = window.setInterval(() => {
+      if (!connected) void loadSnapshot()
+    }, 2500)
 
     return () => {
       active = false
+      window.clearTimeout(retryTimer)
+      window.clearInterval(poll)
       if (channel) void client.removeChannel(channel)
     }
   }, [client, refresh, roomId, userId])

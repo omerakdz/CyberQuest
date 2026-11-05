@@ -7,6 +7,7 @@ import './monster-defense.css'
 import './cyber-detective.css'
 import './fact-or-fact.css'
 import './ai-lab.css'
+import './digital-footprint.css'
 import './fit-viewport.css'
 
 export const metadata: Metadata = {
