@@ -17,6 +17,7 @@ export class RobotScene extends Phaser.Scene {
   private level = 1
   private cfg!: RobotLevel
   private program: Block[] = []
+  private blockLimit = 0
   private attempts = 0
   private running = false
   private token = 0
@@ -44,6 +45,7 @@ export class RobotScene extends Phaser.Scene {
     this.level = data.level ?? 1
     this.cfg = ROBOT_LEVELS[this.level - 1]
     this.program = []
+    this.blockLimit = this.cfg.limit
     this.attempts = 0
     this.running = false
     this.ended = false
@@ -151,37 +153,50 @@ export class RobotScene extends Phaser.Scene {
     blocks.forEach((b, i) => {
       const col = i % 2
       const row = Math.floor(i / 2)
-      const btn = button(this, x + 82 + col * 152, 300 + row * 46, 142, 38, BLOCK_LABEL[b], () => this.add_(b), { color: BLOCK_COLOR[b], size: 13 })
+      const btn = button(this, x + 82 + col * 152, 300 + row * 40, 142, 34, BLOCK_LABEL[b], () => this.add_(b), { color: BLOCK_COLOR[b], size: 13 })
       this.palette.push(btn)
     })
     text(this, x + 158, 276, "BLOKKEN (klik om toe te voegen)", 11, TEXT.muted).setOrigin(0.5)
-    this.runBtn = button(this, x + 82, 454, 142, 44, "▶ START", () => this.run(), { color: COLOR.green, size: 15 })
-    this.editBtns.push(button(this, x + 234, 454, 142, 44, "↺ RESET", () => this.reset(), { color: COLOR.red, size: 14 }))
-    this.editBtns.push(button(this, x + 82, 506, 142, 38, "⌫ WIS LAATSTE", () => this.undo(), { color: COLOR.purple, size: 12 }))
-    this.editBtns.push(button(this, x + 234, 506, 142, 38, "🗑 WIS ALLES", () => this.clearAll(), { color: COLOR.purple, size: 12 }))
+    this.runBtn = button(this, x + 82, 424, 142, 40, "▶ START", () => this.run(), { color: COLOR.green, size: 15 })
+    this.editBtns.push(button(this, x + 234, 424, 142, 40, "↺ RESET", () => this.reset(), { color: COLOR.red, size: 14 }))
+    this.editBtns.push(button(this, x + 82, 472, 142, 36, "⌫ WIS LAATSTE", () => this.undo(), { color: COLOR.purple, size: 12 }))
+    this.editBtns.push(button(this, x + 234, 472, 142, 36, "🗑 WIS ALLES", () => this.clearAll(), { color: COLOR.purple, size: 12 }))
+    this.editBtns.push(button(this, x + 158, 540, 284, 32, "MEER BLOKKEN", () => this.addExtraBlocks(), { color: COLOR.cyan, size: 12 }))
     this.redrawProgram()
   }
 
   private redrawProgram() {
     this.slots.removeAll(true)
-    const x = 636
+    const x = 638
     const perRow = 4
-    for (let i = 0; i < this.cfg.limit; i += 1) {
-      const px = x + (i % perRow) * 72
-      const py = 150 + Math.floor(i / perRow) * 42
+    for (let i = 0; i < this.blockLimit; i += 1) {
+      const px = x + (i % perRow) * 70
+      const py = 146 + Math.floor(i / perRow) * 27
       const b = this.program[i]
-      const bg = this.add.rectangle(px + 32, py + 17, 66, 36, b ? 0x14305e : 0x0a1330).setStrokeStyle(2, b ? BLOCK_COLOR[b] : 0x24407f)
+      const bg = this.add.rectangle(px + 32, py + 13, 64, 24, b ? 0x14305e : 0x0a1330).setStrokeStyle(2, b ? BLOCK_COLOR[b] : 0x24407f)
       this.slots.add(bg)
-      this.slots.add(text(this, px + 32, py + 17, b ? BLOCK_SHORT[b] : String(i + 1), b ? 17 : 11, b ? TEXT.main : TEXT.muted).setOrigin(0.5))
+      this.slots.add(text(this, px + 32, py + 13, b ? BLOCK_SHORT[b] : String(i + 1), b ? 15 : 10, b ? TEXT.main : TEXT.muted).setOrigin(0.5))
     }
-    this.counter.setText(`${this.program.length}/${this.cfg.limit} blokken`)
-    this.counter.setColor(this.program.length >= this.cfg.limit ? TEXT.red : TEXT.yellow)
+    this.counter.setText(`${this.program.length}/${this.blockLimit} blokken`)
+    this.counter.setColor(this.program.length >= this.blockLimit ? TEXT.red : TEXT.yellow)
+  }
+
+  private addExtraBlocks() {
+    if (this.running || this.ended) return
+    const maxBlocks = 20
+    if (this.blockLimit >= maxBlocks) {
+      this.setInfo("Je hebt het maximum aantal extra blokken al toegevoegd.", TEXT.yellow)
+      return
+    }
+    this.blockLimit = Math.min(maxBlocks, this.blockLimit + 4)
+    this.redrawProgram()
+    playPopupSound()
   }
 
   private add_(b: Block) {
     if (this.running || this.ended) return
-    if (this.program.length >= this.cfg.limit) {
-      this.setInfo(`Je programma is vol: maximaal ${this.cfg.limit} blokken. Slimme programmeurs gebruiken een HERHAAL-blok!`, TEXT.yellow)
+    if (this.program.length >= this.blockLimit) {
+      this.setInfo(`Je programma is vol: maximaal ${this.blockLimit} blokken. Voeg extra blokken toe of gebruik een HERHAAL-blok!`, TEXT.yellow)
       playErrorSound()
       return
     }
@@ -291,7 +306,7 @@ export class RobotScene extends Phaser.Scene {
       win: true,
       title: "MISSIE GESLAAGD!",
       lines: [
-        `Je gebruikte ${used} van ${this.cfg.limit} blokken in ${this.attempts} poging(en).`,
+        `Je gebruikte ${used} van ${this.blockLimit} blokken in ${this.attempts} poging(en).`,
         stars === 3 ? "Zuinig geprogrammeerd!" : "Kun je het met minder blokken? Probeer een HERHAAL-blok.",
         this.cfg.lesson,
         "AI is anders: een AI leert zelf patronen uit voorbeelden. Deze robot volgt alleen jouw regels.",

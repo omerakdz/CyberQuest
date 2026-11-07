@@ -7,7 +7,7 @@ const MAX_STRIKES = 3
 const AX = 276
 
 type Mind = { digits: number; min: number; max: number; attempts: number }
-const MIND: Record<number, Mind> = { 6: { digits: 3, min: 1, max: 6, attempts: 8 }, 8: { digits: 4, min: 0, max: 9, attempts: 12 } }
+const MIND: Record<number, Mind> = { 6: { digits: 3, min: 1, max: 6, attempts: 10 }, 8: { digits: 4, min: 0, max: 9, attempts: 12 } }
 
 export class PasswordScene extends Phaser.Scene {
   private level = 1
@@ -269,7 +269,7 @@ export class PasswordScene extends Phaser.Scene {
     const history: { guess: number[]; exact: number; near: number }[] = []
     let current: number[] = []
     this.clearArea()
-    this.header(cfg.digits === 3 ? "Pincode kraken" : "De kluis", `Raad de geheime code van ${cfg.digits} verschillende cijfers (${cfg.min}-${cfg.max}). 🟢 = juist cijfer op de juiste plek, 🟡 = juist cijfer op een andere plek. Je hebt ${cfg.attempts} pogingen.`)
+    this.header(cfg.digits === 3 ? "Pincode kraken" : "De kluis", `Raad de code van ${cfg.digits} verschillende cijfers (${cfg.min}-${cfg.max}). 🟢 = juiste plek, 🟡 = andere plek. Gebruik elke poging om cijfers uit te sluiten. Je hebt ${cfg.attempts} pogingen.`)
     const display = text(this, AX + 40, 190, "", 40, TEXT.cyan, { fontStyle: "700", letterSpacing: 10 })
     const attempts = text(this, AX + 40, 250, "", 14, TEXT.yellow)
     const log = text(this, AX + 380, 150, "", 14, TEXT.main, { lineSpacing: 8 })

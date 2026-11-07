@@ -26,7 +26,7 @@ export function RaceTrack({ state }: { state: TrackState }) {
         height: TRACK_SIZE.height,
         transparent: true,
         audio: { noAudio: true },
-        scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_HORIZONTALLY },
+        scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
         scene,
       })
       scene.applyState(latestState.current)

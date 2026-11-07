@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { ArrowLeft, Check, Lock, Medal, RotateCcw, Trophy } from "lucide-react"
-import { adventureLevels, emptyProgress, medalFor, medalRank, type AdventureProgress, type LevelResult, type Medal as MedalType } from "@/lib/typing-adventure"
+import { adventureLevels, emptyProgress, getAdventureLevel, medalFor, medalRank, type AdventureProgress, type LevelResult, type Medal as MedalType } from "@/lib/typing-adventure"
 
 type AdventureScreen = "map" | "level" | "result" | "final"
 const STORAGE_KEY = "cyberquest-typing-adventure-v1"
@@ -43,10 +43,10 @@ export function TypingAdventure({ onBack, onAward }: { onBack: () => void; onAwa
 
   const completed = Object.keys(progress.results).length
   const totals = useMemo(() => Object.values(progress.results).reduce((acc, result) => { acc[result.medal] += 1; return acc }, { gold: 0, silver: 0, bronze: 0 } as Record<MedalType, number>), [progress])
-  const current = adventureLevels[selected - 1]
+  const current = getAdventureLevel(selected)
 
   function beginLevel(id: number) {
-    if (id < 1 || id > 100) return
+    if (!Number.isSafeInteger(id) || id < 1) return
     setSelected(id); setTyped(""); setElapsed(0); setStartedAt(null); setLastResult(null); setDone(false); startRef.current = null; setView("level")
     window.setTimeout(() => inputRef.current?.focus(), 50)
   }
@@ -65,16 +65,63 @@ export function TypingAdventure({ onBack, onAward }: { onBack: () => void; onAwa
     const result = improved ? { time, accuracy, medal } : previous
     setLastResult({ time, accuracy, medal }); setNewBest(improved)
     setElapsed(time); setDone(true)
-    setProgress((old) => ({ ...old, unlocked: Math.max(old.unlocked, Math.min(100, current.id + 1)), results: { ...old.results, [String(current.id)]: result } }))
+    setProgress((old) => ({ ...old, unlocked: Math.max(old.unlocked, current.id + 1), results: { ...old.results, [String(current.id)]: result } }))
     onAward(medal === "gold" ? 100 : medal === "silver" ? 70 : 45)
+    if (current.id === 100) setView("final")
   }
   const areaProgress = (area: string) => adventureLevels.filter((level) => level.area === area && progress.results[String(level.id)]).length
 
-  if (view === "level") return <section className="adventure-level"><button className="corner-back" onClick={() => setView("map")}><ArrowLeft /> MAP</button><div className="adventure-level-top"><span>{current.area}</span><b>LEVEL {String(current.id).padStart(2, "0")} / 100</b><strong>{elapsed.toFixed(1)}s</strong></div><div className="adventure-challenge"><div className="adventure-kicker">TYPING ADVENTURE · {current.area}</div><h2>TYPE THE <span>MESSAGE</span></h2><div className="sentence"><span className="sentence-correct">{current.sentence.slice(0, typed.length)}</span><span className={typed.length && typed !== current.sentence.slice(0, typed.length) ? "sentence-wrong" : ""}>{current.sentence.slice(typed.length)}</span></div><div className="adventure-progress"><i style={{ width: `${Math.min(100, typed.length / current.sentence.length * 100)}%` }} /></div><input ref={inputRef} autoFocus value={typed} onChange={(event) => handleType(event.target.value)} placeholder="Start typing to begin the timer..." disabled={done} aria-label="Type the level sentence"/><small>{typed.length} / {current.sentence.length} CHARACTERS · MINIMUM ACCURACY 80%</small>{done && lastResult && <div className="level-complete"><div className="adventure-kicker">LEVEL {String(current.id).padStart(2, "0")} COMPLETE · {lastResult.time.toFixed(1)}s · {lastResult.accuracy}%</div><div className="adventure-actions"><button className="arcade-button primary" onClick={() => beginLevel(current.id)}><RotateCcw /> OPNIEUW</button><button className="arcade-button" onClick={() => setView("map")}>MAP</button><button className="arcade-button" onClick={() => beginLevel(current.id + 1)} disabled={current.id >= 100}>VOLGENDE LEVEL <Check /></button></div></div>}</div></section>
+  if (view === "level") return <section className="adventure-level"><button className="corner-back" onClick={() => setView("map")}><ArrowLeft /> MAP</button><div className="adventure-level-top"><span>{current.area}</span><b>LEVEL {String(current.id).padStart(2, "0")} / {current.id <= 100 ? "100" : "∞"}</b><strong>{elapsed.toFixed(1)}s</strong></div><div className="adventure-challenge"><div className="adventure-kicker">TYPING ADVENTURE · {current.area}</div><h2>TYPE THE <span>MESSAGE</span></h2><div className="sentence" aria-label={current.sentence}>{Array.from({ length: Math.max(typed.length, current.sentence.length) }, (_, index) => { const actual = typed[index]; const expected = current.sentence[index]; return actual === undefined ? <span key={index}>{expected}</span> : <span key={index} className={actual === expected ? "sentence-correct" : "sentence-wrong"}>{actual}</span> })}</div><div className="adventure-progress"><i style={{ width: `${Math.min(100, typed.length / current.sentence.length * 100)}%` }} /></div><input ref={inputRef} autoFocus value={typed} onChange={(event) => handleType(event.target.value)} placeholder="Start typing to begin the timer..." disabled={done} aria-label="Type the level sentence"/><small>{typed.length} / {current.sentence.length} CHARACTERS · MINIMUM ACCURACY 80%</small>{done && lastResult && <div className="level-complete"><div className="adventure-kicker">LEVEL {String(current.id).padStart(2, "0")} COMPLETE · {lastResult.time.toFixed(1)}s · {lastResult.accuracy}%</div><div className="adventure-actions"><button className="arcade-button primary" onClick={() => beginLevel(current.id)}><RotateCcw /> OPNIEUW</button><button className="arcade-button" onClick={() => setView("map")}>MAP</button><button className="arcade-button" onClick={() => beginLevel(current.id + 1)}>VOLGEND LEVEL <Check /></button></div></div>}</div></section>
 
   if (view === "result" && lastResult) return <section className="adventure-result"><div className={`result-medal ${lastResult.medal}`}><Medal /></div><div className="adventure-kicker">LEVEL {String(selected).padStart(2, "0")} COMPLETE</div><h2>MISSION <span>CLEARED</span></h2><p className="result-copy">{newBest ? "Nieuwe persoonlijke best! Je voortgang is opgeslagen." : "Goed gedaan. Je beste resultaat blijft bewaard."}</p><div className="result-stats"><div><b>{lastResult.time.toFixed(1)}s</b><small>TIME</small></div><div><b>{lastResult.accuracy}%</b><small>ACCURACY</small></div><div><b>{medalLabel[lastResult.medal]}</b><small>MEDAL</small></div></div><div className="adventure-actions"><button className="arcade-button primary" onClick={() => beginLevel(selected)}><RotateCcw /> REPLAY</button><button className="arcade-button" onClick={() => setView("map")}>WORLD MAP</button><button className="arcade-button" onClick={() => beginLevel(Math.min(100, selected + 1))} disabled={selected >= 100}>NEXT LEVEL <Check /></button></div></section>
 
-  if (view === "final") return <section className="adventure-result final-result"><div className="result-medal gold"><Trophy /></div><div className="adventure-kicker">DIGITAL KINGDOM · LEVEL 100</div><h2>ADVENTURE <span>COMPLETE</span></h2><p className="result-copy">Je hebt alle 100 typing levels veroverd. CyberQuest heeft een nieuwe kampioen.</p><div className="result-stats"><div><b>{totals.gold}</b><small>GOLD</small></div><div><b>{totals.silver}</b><small>SILVER</small></div><div><b>{totals.bronze}</b><small>BRONZE</small></div></div><button className="arcade-button primary" onClick={() => setView("map")}>RETURN TO MAP</button></section>
+  if (view === "final") return <section className="adventure-result final-result"><div className="result-medal gold"><Trophy /></div><div className="adventure-kicker">DIGITAL KINGDOM · LEVEL 100</div><h2>ADVENTURE <span>COMPLETE</span></h2><p className="result-copy">Je hebt de eerste 100 levels veroverd. Er staan nieuwe uitdagingen voor je klaar!</p><div className="result-stats"><div><b>{totals.gold}</b><small>GOLD</small></div><div><b>{totals.silver}</b><small>SILVER</small></div><div><b>{totals.bronze}</b><small>BRONZE</small></div></div><div className="adventure-actions"><button className="arcade-button primary" onClick={() => beginLevel(101)}>START LEVEL 101 <Check /></button><button className="arcade-button" onClick={() => setView("map")}>TERUG NAAR DE MAP</button></div></section>
 
-  return <section className="adventure-map"><div className="adventure-map-head"><button className="corner-back" onClick={onBack}><ArrowLeft /> MODES</button><div><div className="adventure-kicker">TYPE BATTLE · SINGLE PLAYER</div><h2>TYPING <span>ADVENTURE</span></h2><p>Kies zelf een level op de map, of ga verder bij level {Math.min(100, progress.unlocked)}.</p></div><div className="adventure-stats"><b>{completed}<small>/ 100 LEVELS</small></b><b>{totals.gold}<small>GOLD</small></b><b>{totals.silver}<small>SILVER</small></b><b>{totals.bronze}<small>BRONZE</small></b></div></div><div className="world-map" aria-label="Typing Adventure world map"><div className="map-path" />{adventureLevels.map((level) => { const unlocked = true; const result = progress.results[String(level.id)]; return <button key={level.id} className={`map-node ${unlocked ? "unlocked" : "locked"} ${level.id === progress.unlocked ? "current" : ""} ${result ? "completed" : ""}`} style={{ "--x": `${8 + ((level.id - 1) % 10) * 9}%`, "--y": `${Math.floor((level.id - 1) / 10) * 9 + 7}%` } as CSSProperties} onClick={() => beginLevel(level.id)} disabled={!unlocked}><span>{result ? medalLabel[result.medal][0] : unlocked ? level.id : <Lock />}</span><small>{result ? medalLabel[result.medal] : `LEVEL ${level.id}`}</small></button>})}<div className="map-areas">{["Green Valley", "Crystal Caves", "Cyber City", "Neon Desert", "Digital Kingdom"].map((area) => <div key={area}><b>{area}</b><span>{areaProgress(area)} / 20 complete</span></div>)}</div></div></section>
+  return (
+    <section className="adventure-map">
+      <div className="adventure-map-head">
+        <button className="corner-back" onClick={onBack}><ArrowLeft /> MODES</button>
+        <div>
+          <div className="adventure-kicker">TYPE BATTLE · SINGLE PLAYER</div>
+          <h2>TYPING <span>ADVENTURE</span></h2>
+          <p>Kies een level op de map of ga verder bij level {progress.unlocked}.</p>
+          {progress.unlocked > 100 && <button className="arcade-button primary" onClick={() => beginLevel(progress.unlocked)}>VERDER MET LEVEL {progress.unlocked} <Check /></button>}
+        </div>
+        <div className="adventure-stats">
+          <b>{completed}<small>/ LEVELS</small></b>
+          <b>{totals.gold}<small>GOLD</small></b>
+          <b>{totals.silver}<small>SILVER</small></b>
+          <b>{totals.bronze}<small>BRONZE</small></b>
+        </div>
+      </div>
+      <div className="world-map" aria-label="Typing Adventure world map">
+        <div className="map-path" />
+        {adventureLevels.map((level) => {
+          const unlocked = level.id <= progress.unlocked
+          const result = progress.results[String(level.id)]
+          return (
+            <button
+              key={level.id}
+              className={`map-node ${unlocked ? "unlocked" : "locked"} ${level.id === progress.unlocked ? "current" : ""} ${result ? "completed" : ""}`}
+              style={{
+                "--x": `${8 + ((level.id - 1) % 10) * 9}%`,
+                "--y": `${30 + Math.floor((level.id - 1) / 10) * 58}px`,
+              } as CSSProperties}
+              onClick={() => beginLevel(level.id)}
+              disabled={!unlocked}
+              aria-label={`Level ${level.id}${result ? `, ${medalLabel[result.medal]}` : ""}${unlocked ? "" : ", vergrendeld"}`}
+            >
+              <span>{result ? medalLabel[result.medal][0] : unlocked ? level.id : <Lock />}</span>
+              <small>{result ? medalLabel[result.medal] : `LEVEL ${level.id}`}</small>
+            </button>
+          )
+        })}
+      </div>
+      <div className="map-areas">
+        {["Green Valley", "Crystal Caves", "Cyber City", "Neon Desert", "Digital Kingdom"].map((area) => (
+          <div key={area}><b>{area}</b><span>{areaProgress(area)} / 20 compleet</span></div>
+        ))}
+      </div>
+    </section>
+  )
 }

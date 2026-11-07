@@ -1,4 +1,4 @@
-.md-hud{display:flex;align-items:center;gap:14px;justify-content:flex-end;font-family:'Barlow Condensed',sans-serif;font-size:26px;letter-spacing:2px}
+.md-hud{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;font-family:'Barlow Condensed',sans-serif;font-size:26px;letter-spacing:2px;padding:4px 8px}
 .md-hud em{font-style:normal;font-size:16px;color:#ff8fae;border:1px solid rgba(255,102,143,.6);border-radius:999px;padding:3px 10px}
 .md-lives{display:inline-flex;gap:3px}
 .md-lives svg{width:20px;height:20px;color:#4a566e}
@@ -30,3 +30,16 @@
 .monster-art{font-size:46px}
 @media(max-width:1000px){.mode-grid.four{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.mode-grid.four{grid-template-columns:1fr}.md-emoji{font-size:30px}.md-monster.boss .md-emoji{font-size:52px}.md-word{font-size:13px}}
+
+.md-arena{padding-inline:clamp(16px,4vw,48px)}
+.md-arena .race-arena-top{grid-template-columns:minmax(90px,1fr) minmax(180px,auto) minmax(210px,1fr);gap:clamp(8px,2vw,24px)}
+.md-arena .race-arena-top>.corner-back{justify-self:start}
+.md-arena .md-hud{justify-self:end}
+
+@media(max-width:600px){
+  .md-arena .race-arena-top{grid-template-columns:1fr auto;row-gap:8px}
+  .md-arena .race-arena-top>div:nth-child(2){grid-column:1/-1;grid-row:1}
+  .md-arena .race-arena-top>.corner-back{grid-column:1;grid-row:2}
+  .md-arena .md-hud{grid-column:2;grid-row:2;gap:8px;font-size:22px}
+  .md-lives svg{width:18px;height:18px}
+}

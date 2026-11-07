@@ -166,7 +166,7 @@ export function starString(count: number, max = 3) {
 }
 
 export function topBar(scene: Phaser.Scene, label: string, backLabel: string, onBack: () => void) {
-  const back = button(scene, 78, 34, 130, 38, `← ${backLabel}`, onBack, { size: 13, color: COLOR.purple })
+  const back = button(scene, 92, 34, 164, 44, `← ${backLabel}`, onBack, { size: 13, color: COLOR.purple })
   const title = heading(scene, W / 2, 34, label, 30, TEXT.cyan).setOrigin(0.5)
   return { back, title }
 }

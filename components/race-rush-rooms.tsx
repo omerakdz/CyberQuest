@@ -631,7 +631,7 @@ function MultiplayerRace({
 
   if (finished) {
     return (
-      <main className="race-arena race-room-shell race-multiplayer-game">
+      <main className="race-arena race-room-shell race-multiplayer-game race-fit">
         <div className="race-arena-top">
           <button className="corner-back" onClick={() => void exit()} disabled={actionBusy}><ArrowLeft /> {isHost ? "ROOM SLUITEN" : "ROOM VERLATEN"}</button>
           <div><div className="season"><Trophy /> RACE COMPLETE · {room.code}</div><h2>FINAL <span>RESULTS</span></h2></div>
@@ -648,17 +648,20 @@ function MultiplayerRace({
           ))}
         </div>
         {error && <div className="race-room-error" role="alert">{error}</div>}
-        {isHost ? (
-          <button className="arcade-button primary" onClick={() => void onAction("reset_race_room", { p_room_id: room.id })} disabled={actionBusy}><Zap /> RACE AGAIN · TERUG NAAR LOBBY</button>
-        ) : (
-          <div className="race-host-note"><Shield /> Wacht tot de host een nieuwe race start of terug naar de lobby gaat.</div>
-        )}
+        <div className="race-finish-actions">
+          {isHost ? (
+            <button className="arcade-button primary" onClick={() => void onAction("reset_race_room", { p_room_id: room.id })} disabled={actionBusy}><Zap /> RACE AGAIN · TERUG NAAR LOBBY</button>
+          ) : (
+            <div className="race-host-note"><Shield /> Wacht tot de host een nieuwe race start.</div>
+          )}
+          <button className="arcade-button race-back-button" onClick={() => void exit()} disabled={actionBusy}><ArrowLeft /> {isHost ? "ROOM SLUITEN & TERUG" : "TERUG NAAR RACE RUSH"}</button>
+        </div>
       </main>
     )
   }
 
   return (
-    <main className="race-arena race-room-shell race-multiplayer-game">
+    <main className="race-arena race-room-shell race-multiplayer-game race-fit">
       <div className="race-arena-top">
         <button className="corner-back" onClick={() => void exit()} disabled={actionBusy}><LogOut /> EXIT ROOM</button>
         <div><div className="season"><Keyboard /> {isSpectator ? "HOST SPECTATOR" : "TYPE BATTLE"} · {room.code}</div><h2>ROUND <span>{String(round).padStart(2, "0")} / 20</span></h2></div>

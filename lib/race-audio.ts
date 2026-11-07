@@ -7,7 +7,7 @@ let nextTime = 0
 let step = 0
 let wanted: MusicTrack | null = null
 let playing: MusicTrack | null = null
-let prefs = { music: true, sound: true }
+let prefs = { music: false, sound: true }
 
 const TRACKS = {
   // Calm, bright arpeggio for the menus.
@@ -80,7 +80,7 @@ function halt() {
 }
 
 function apply() {
-  const target = prefs.music ? wanted : null
+  const target = wanted === "home" && !prefs.music ? null : wanted
   if (target === playing) return
   halt()
   if (!target) return

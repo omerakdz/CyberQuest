@@ -1,5 +1,5 @@
 export const TYPING_TIPS = [
-  "Houd je vingers op de middelste rij: A S D F en J K L.",
+  "Houd je vingers op de middelste rij: Q S D F en J K L M.",
   "Kijk naar het scherm, niet naar je toetsenbord.",
   "Sneller worden? Eerst netjes typen, dan pas versnellen.",
   "Gebruik al je vingers, ook je pinken.",

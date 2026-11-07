@@ -43,7 +43,7 @@ export const ROBOT_LEVELS: RobotLevel[] = [
       "#########",
     ],
     startDir: 1,
-    limit: 12,
+    limit: 16,
     lesson: "Echte AI leert zelf van voorbeelden. Deze robot leert niets: hij volgt jouw programma stap voor stap.",
     solution: ["REP3", "F", "REP3", "F", "R", "REP2", "F", "R", "REP3", "F", "REP3", "F"],
   },

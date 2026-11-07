@@ -59,7 +59,7 @@ function startWave(g: Game) {
   g.wave += 1
   g.bossPending = isBossWave(g.wave)
   g.toSpawn = g.bossPending ? 3 + Math.floor(g.wave / 3) : Math.min(20, 4 + g.wave * 2)
-  g.spawnCd = 0.6
+  g.spawnCd = 1.2
 }
 
 function pickWord(g: Game) {
@@ -75,7 +75,7 @@ function spawn(g: Game) {
   const taken = new Set(g.monsters.filter((m) => m.x > 78).map((m) => m.lane))
   const free = Array.from({ length: LANES }, (_, i) => i).filter((l) => !taken.has(l))
   const lane = (free.length ? free : [0, 1, 2, 3, 4])[Math.floor(Math.random() * (free.length || LANES))]
-  const speed = 5 + g.wave * 0.6
+  const speed = 5 + Math.min(g.wave - 1, 12) * 0.35
   if (g.toSpawn > 0) {
     g.toSpawn -= 1
     g.monsters.push({ id: g.nextId++, word: pickWord(g), x: 100, lane, speed, emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)], boss: false })
@@ -105,7 +105,7 @@ function tick(g: Game, dt: number): GameEvent[] {
   g.spawnCd -= dt
   if (g.spawnCd <= 0 && (g.toSpawn > 0 || g.bossPending)) {
     spawn(g)
-    g.spawnCd = Math.max(0.9, 2.6 - g.wave * 0.2)
+    g.spawnCd = Math.max(0.8, 2.4 - g.wave * 0.1)
   }
 
   for (const m of g.monsters) m.x -= m.speed * dt
@@ -164,7 +164,7 @@ export function MonsterDefense({ onBack, onRecord }: Props) {
       const events = tick(game, dt)
       for (const event of events) {
         if (event.type === "hit") { playErrorSound(); setTyped(""); showPopup("AU! EEN MONSTER BREEKT DOOR", "broken") }
-        if (event.type === "clear") showPopup(`WAVE ${event.wave} GEWONNEN!`, "lead")
+        if (event.type === "clear") showPopup(`WAVE ${event.wave} VERDEDIGD!`, "lead")
         if (event.type === "wave") { showPopup(isBossWave(event.wave ?? 0) ? "EINDBAAS NADERT!" : `WAVE ${event.wave} BEGINT`, "fast"); setTyped("") }
         if (event.type === "over") {
           setTyped("")
@@ -287,11 +287,12 @@ export function MonsterDefense({ onBack, onRecord }: Props) {
           </div>
         )}
         {g.phase === "intermission" && (
-          <div className="md-overlay light"><h3>WAVE {g.wave} GEWONNEN!</h3><p>Volgende golf over {Math.ceil(g.interCd)}...</p></div>
+          <div className="md-overlay light"><h3>WAVE {g.wave} VERDEDIGD!</h3><p>Volgende golf over {Math.ceil(g.interCd)}...</p></div>
         )}
         {g.phase === "over" && (
           <div className="md-overlay">
-            <h3>HET KASTEEL IS GEVALLEN</h3>
+            <h3>VERLOREN: HET KASTEEL IS GEVALLEN</h3>
+            <p>De draak bereikte het kasteel. Probeer het opnieuw en verdedig elke golf!</p>
             <div className="md-stats">
               <div><b>{g.wave}</b><small>WAVE</small></div>
               <div><b>{g.score.toLocaleString("nl-NL")}</b><small>SCORE</small></div>
